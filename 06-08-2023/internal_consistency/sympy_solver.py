@@ -36,15 +36,12 @@ class Standardize:
 
             # Step 2: Remove surrounding whitespace from tokens
             math_symbol_tokens = list(map(lambda equation : equation.strip(), math_symbol_tokens))
-            print(math_symbol_tokens)
 
             # Step 3: Remove leading digits from tokens
             math_symbol_tokens = list(map(lambda equation : Standardize.remove_leading_digits(equation), math_symbol_tokens))
-            print(math_symbol_tokens)
 
             # Step 4: Remove all tokens of length 0
             math_symbol_tokens = list(filter(lambda equation : len(equation) > 0, math_symbol_tokens))
-            print(math_symbol_tokens)
 
             variable_names += math_symbol_tokens
         
