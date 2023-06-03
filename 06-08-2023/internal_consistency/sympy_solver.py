@@ -5,6 +5,15 @@ from sympy.parsing.sympy_parser import parse_expr
 from sympy.parsing.sympy_parser import transformations
 from sympy.parsing.sympy_parser import T
 
+import threading
+from time import sleep
+import sys
+
+try:
+    import thread
+except ImportError:
+    import _thread as thread
+
 from typing import List
 
 class Standardize:
@@ -16,6 +25,7 @@ class Standardize:
         text = text.replace('½', '1/2')
         text = text.replace('¼', '1/4')
         text = text.replace('\'', '')
+        text = text.replace(',', '')
         return text
 
     def extract_variable_names  (equations : List[str]) -> List[str]:
@@ -60,6 +70,31 @@ class Standardize:
         return variable_names, equations
 
 class SympySolver:
+    def quit_function(fn_name):
+        # print to stderr, unbuffered in Python 2.
+        sys.stderr.flush() # Python 3 stderr is likely buffered.
+        thread.interrupt_main() # raises KeyboardInterrupt
+    # ------------------------------------------- #
+    #   A function that times out functions 
+    #   after a certain period of time
+    # ------------------------------------------- #
+    def exit_after(s):
+        '''
+        use as decorator to exit process if 
+        function takes longer than s seconds
+        '''
+        def outer(fn):
+            def inner(*args, **kwargs):
+                timer = threading.Timer(s, SympySolver.quit_function, args=[fn.__name__])
+                timer.start()
+                try:
+                    result = fn(*args, **kwargs)
+                finally:
+                    timer.cancel()
+                return result
+            return inner
+        return outer
+    
     def create_expression(equation : str):
         split_equations = equation.split('=')
         return Rel(
@@ -78,9 +113,8 @@ class SympySolver:
 
         return to_return
     
-    @staticmethod
-    def solve_equations(equations):
-        print('BEFORE:', equations)
+    @exit_after(3)
+    def capped_solve(equations):
         # Step 1: Remove all lines that do not contain an equal symbol
         equations = list(filter(lambda equation : equation.count('=') > 0, equations))
 
@@ -92,3 +126,7 @@ class SympySolver:
             if len(solved) != len(variable_names): return 'FREE VARIABLE' + str(solved)
             return solved
         except: return "FAILED"
+    
+    def solve_equations(equations):
+        try: return SympySolver.capped_solve(equations)
+        except: return "TIMEOUT"

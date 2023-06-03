@@ -24,11 +24,11 @@ API_KEY = os.getenv('OPENAI_API_KEY')
 
 # Generate prompts.
 def gsm8k_prompt(row):
-    text = BASIC_PROMPT.replace('{question}', row['question'])
+    text = BASIC_PROMPT.replace('{question}', row['sQuestion'])
     index = row['iIndex']
     return {"text": text, "id": index}
 
-gsm8k = pandas.read_json('data/input/gsm8k.jsonl', lines=True)
+gsm8k = pandas.read_json('data/input/draw.json')
 gsm8k = gsm8k.apply(lambda row : gsm8k_prompt(row), axis=1).to_list()
 
 CONFIGS = { "model": "gpt-3.5-turbo", "n": 20, "temperature": 0.7}

@@ -28,16 +28,16 @@ def gsm8k_prompt(row):
     index = row['question_id']
     return {"text": text, "id": index}
 
-sample_0 = pandas.read_json('data/output/response/sample_0.jsonl', lines=True)
-sample_1 = pandas.read_json('data/output/response/sample_1.jsonl', lines=True)
-sample_2 = pandas.read_json('data/output/response/sample_2.jsonl', lines=True)
-sample_3 = pandas.read_json('data/output/response/sample_3.jsonl', lines=True)
-sample_4 = pandas.read_json('data/output/response/sample_4.jsonl', lines=True)
-sample_5 = pandas.read_json('data/output/response/sample_5.jsonl', lines=True)
-sample_6 = pandas.read_json('data/output/response/sample_6.jsonl', lines=True)
-sample_7 = pandas.read_json('data/output/response/sample_7.jsonl', lines=True)
-sample_8 = pandas.read_json('data/output/response/sample_8.jsonl', lines=True)
-sample_9 = pandas.read_json('data/output/response/sample_9.jsonl', lines=True)
+sample_0 = pandas.read_json('data/output/split_response/sample_0.jsonl', lines=True)
+sample_1 = pandas.read_json('data/output/split_response/sample_1.jsonl', lines=True)
+sample_2 = pandas.read_json('data/output/split_response/sample_2.jsonl', lines=True)
+sample_3 = pandas.read_json('data/output/split_response/sample_3.jsonl', lines=True)
+sample_4 = pandas.read_json('data/output/split_response/sample_4.jsonl', lines=True)
+sample_5 = pandas.read_json('data/output/split_response/sample_5.jsonl', lines=True)
+sample_6 = pandas.read_json('data/output/split_response/sample_6.jsonl', lines=True)
+sample_7 = pandas.read_json('data/output/split_response/sample_7.jsonl', lines=True)
+sample_8 = pandas.read_json('data/output/split_response/sample_8.jsonl', lines=True)
+sample_9 = pandas.read_json('data/output/split_response/sample_9.jsonl', lines=True)
 
 sample_0 = sample_0.apply(lambda row : gsm8k_prompt(row), axis=1).to_list()
 sample_1 = sample_1.apply(lambda row : gsm8k_prompt(row), axis=1).to_list()
