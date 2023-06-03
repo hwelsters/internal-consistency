@@ -358,50 +358,6 @@
      "Equiv": []
     }, 
     {
-     "sQuestion": "Mike invested $ 6000 for one year . He invested part of it at 9 % and the rest at 11 % . At the end of the year he earned $ 624 in interest . How much did he invest at each rate ?", 
-     "lSolutions": [
-      1800.0, 
-      4200.0
-     ], 
-     "Template": [
-      "0.01 * a * m + 0.01 * b * n = c", 
-      "n + m = d"
-     ], 
-     "lEquations": [
-       "( 0.01 * 9 ) *x + ( 0.01 * 11 ) *(5800-x) = 624",
-      "( 0.01 * 9 ) *x + ( 0.01 * 11 ) *y = 624", 
-      "y=(6000-x)"
-     ], 
-     "iIndex": 151268, 
-     "Alignment": [
-      {
-       "coeff": "a", 
-       "SentenceId": 1, 
-       "Value": 11.0, 
-       "TokenId": 12
-      }, 
-      {
-       "coeff": "b", 
-       "SentenceId": 1, 
-       "Value": 9.0, 
-       "TokenId": 6
-      }, 
-      {
-       "coeff": "c", 
-       "SentenceId": 2, 
-       "Value": 624.0, 
-       "TokenId": 9
-      }, 
-      {
-       "coeff": "d", 
-       "SentenceId": 0, 
-       "Value": 6000.0, 
-       "TokenId": 3
-      }
-     ], 
-     "Equiv": []
-    }, 
-    {
      "sQuestion": "One pan pizza and two cheesburgers provide 2860 calories . Two pan pizzas and one cheeseburger provide 2990 calories . Find the caloric content of each item .", 
      "lSolutions": [
       1040.0, 
