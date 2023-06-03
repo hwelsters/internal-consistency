@@ -7,63 +7,45 @@ from sympy.parsing.sympy_parser import T
 
 from typing import List
 
-class Canonicalize:
+class Standardize:
     def remove_leading_digits   (text : str) -> str: return re.sub(r"^\d+.?\d*", "", text)
     def remove_dollar_sign      (text : str) -> str: return text.replace('$', '')
     def replace_percentage      (text : str) -> str: return text.replace('%', '*0.01')
     def remove_excess_space     (text : str) -> str: return re.sub(r' +', ' ', text)
 
     def extract_variable_names  (equations : List[str]) -> List[str]:
+        variable_names = []
         for equation in equations:
+            # Step 1: Split it using math symbols
             math_symbol_tokens = re.split(r'[\+\-\/\*]', equation)
-            
 
-    def canonicalize_equations  (equations : List[str]) -> List[str]:   
-        equations = list(map(lambda equation : Canonicalize.remove_dollar_sign(equation), equations))
-        equations = list(map(lambda equation : Canonicalize.replace_percentage(equation), equations))
-        equations = list(map(lambda equation : Canonicalize.remove_excess_space(equation), equations))
+            # Step 2: Remove surrounding whitespace from tokens
+            math_symbol_tokens = list(map(lambda equation : equation.strip(), math_symbol_tokens))
+
+            # Step 3: Remove leading digits from tokens
+            math_symbol_tokens = list(map(lambda equation : Standardize.remove_leading_digits(equation), math_symbol_tokens))
+
+            # Step 4: Remove all tokens of length 0
+            math_symbol_tokens = list(filter(lambda equation : len(equation) > 0, math_symbol_tokens))
+
+            variable_names += math_symbol_tokens
+        variable_names = list(set(variable_names))
+        variable_names.sort(key=len, reverse=True)
+        return variable_names
+
+    def replace_variables_with_standard_form(equation : str, variable_names : List[str]) -> str:
+        for index, variable_name in enumerate(variable_names): equation = equation.replace(variable_name, chr(index + 97))
+        return equation
+
+    def standardize_equations  (equations : List[str]) -> List[str]:   
+        equations = list(map(lambda equation : Standardize.remove_dollar_sign(text=equation), equations))
+        equations = list(map(lambda equation : Standardize.replace_percentage(text=equation), equations))
+        equations = list(map(lambda equation : Standardize.remove_excess_space(text=equation), equations))
+        variable_names = Standardize.extract_variable_names(equations=equations)
+        equations = list(map(lambda equation : Standardize.replace_variables_with_standard_form(equation=equation, variable_names=variable_names), equations))
         return equations
 
 class SympySolver:
-    def __init__(self) -> None:
-        pass
-
-    # TODO: AAAAAAAAAAAAAAAAAAAAAHH
-    # SO UGLY AND MESSY, REFACTOR THIS MESS!
-    # Split the steps up into functions
-    @staticmethod
-    def canonicalize_equations(equations):
-        # Step 1: Find all unique variables
-        tokens = []
-        for equation in equations:
-            cleaned_equations = re.sub(r'[^\s\_a-zA-Z]', '[bingbonkdonkconk]', equation)   
-            cleaned_equations = re.sub(r'\s+', ' ', cleaned_equations)   
-            split_equations = cleaned_equations.split('[bingbonkdonkconk]')
-            split_equations = [equation.strip() for equation in split_equations]
-            split_equations = list(filter(lambda text : len(text) > 0, split_equations))
-            tokens += split_equations
-        tokens = list(set(tokens))
-        tokens = list(sorted(tokens, key=len))
-        tokens = list(reversed(tokens))
-
-        # Step 2: Replace all the variables with a unique 
-        # single-letter representation
-        print('\n\n\n\n\n')
-        new_equations = []
-        for equation in equations:
-            print("CANNOOON", equation)
-            print("Tokens", tokens)
-            for index, token in enumerate(tokens):
-                print(index, token)
-                var_char = chr(index + 97)
-                equation = equation.replace(token, var_char)
-                print(equation)
-            new_equations.append(equation)
-        
-        print("BONKUS", new_equations)
-        return new_equations
-
-
     def create_expression(equation : str):
         split_equations = equation.split('=')
         return Rel(
@@ -84,10 +66,10 @@ class SympySolver:
     
     @staticmethod
     def solve_equations(equations):
+        # Step 1: Remove all lines that do not contain an equal symbol
         equations = filter(lambda equation : equation.count('=') > 0, equations)
-        equations = list(equations)
+        equations = Standardize.standardize_equations(equations)
 
-        solved_base = set()
         solved_canonicalized = set()
 
         try:
