@@ -15,3 +15,12 @@ You should remove all units from your response.
 
 Response: {response}
 '''.strip() + '\n\n\n'
+
+SOLVE_SYSTEM = '''
+Solve the following system of equations:
+First, solve the equations step-by-step
+Second, output the final answer; format it like this: 'the answer is <put your answer here>'.
+
+Equations:
+{equations}
+'''.strip() + '\n\n\n'
