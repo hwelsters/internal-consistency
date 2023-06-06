@@ -49,6 +49,7 @@ class Standardize:
         variable_names = list(set(variable_names))
 
         # Sort it in descending order based on variable name length
+        variable_names.sort(reverse=True)
         variable_names.sort(key=len, reverse=True)
         return variable_names
 
