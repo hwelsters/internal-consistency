@@ -1,45 +1,49 @@
 import pandas as pd
 import json
-import re
 import os
+from collections import defaultdict
 
-dir_path = 'data/output/split_response/'
-output_dir = 'data/output/chatgpt_answers/'
+dir_path = 'data/output/chatgpt_answers/'
 
-# Create output directory if it doesn't exist
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
-
-def extract_numbers(text):
-    """Extract numbers from given text."""
-    numbers = re.findall(r"[-+]?\d*\.\d+|\d+", text)
-    numbers = [float(num) if '.' in num else int(num) for num in numbers]
-    return numbers  # Return a list
-
-
+questions_dict = defaultdict(lambda: defaultdict(int))
+majority_count_frequencies = defaultdict(int)
 
 for i in range(10):  
-    responses = pd.read_json(f'{dir_path}sample_{i}.jsonl', lines=True)
+    answers = pd.read_json(f'{dir_path}sample_{i}.jsonl', lines=True)
+    
+    for _, row in answers.iterrows():
+        answer = row['chatgpt_answer']
+        
+        if answer is not None:
+            answer_key = str(answer)
+            questions_dict[row['question_id']][answer_key] += 1
 
-    extracted_responses = []
+majority_sizes = {}
+majority_answers = {}
+random_count = 0
 
-    for _, row in responses.iterrows():
-        # Look for the answer after "The answer is" ignoring case and line breaks
-        response_text = row['response'].replace('\n', ' ')
-        match = re.search(r"(?i)the answer is", response_text)
-        if match:
-            answer_text = response_text[match.end():]
-            answer = extract_numbers(answer_text)
-        else:
-            answer = None
+# For each question, store the majority counts in a list
+all_majority_counts = []
 
-        extracted_responses.append({
-            'question_id': row['question_id'],
-            'chatgpt_answer': answer
-        })
+for question_id, ans_dict in questions_dict.items():
+    max_count = max(ans_dict.values())
+    all_majority_counts.append(max_count)
+    
+    majority_answers_for_question = [answer for answer, count in ans_dict.items() if count == max_count]
+    
+    majority_sizes[question_id] = max_count
+    majority_answers[question_id] = majority_answers_for_question[0]  
 
-    # Write to jsonl file
-    with open(f'{output_dir}sample_{i}.jsonl', 'w') as outfile:
-        for resp in extracted_responses:
-            json.dump(resp, outfile)
-            outfile.write('\n')
+    is_random = 'no' if max_count > 1 else 'yes'
+
+    if is_random == 'yes':
+        random_count += 1
+
+    majority_count_frequencies[max_count] += 1
+    
+    print(f'question_id: {question_id}, majority_count = {max_count}, majority_answer = {majority_answers[question_id]}, random = {is_random}')
+
+print(f'NUMBER OF NON-MAJORITIES: {random_count}')
+
+for count in sorted(majority_count_frequencies):
+    print(f'Majority count of {count} shows up {majority_count_frequencies[count]} times.')
