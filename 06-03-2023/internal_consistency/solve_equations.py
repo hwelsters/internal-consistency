@@ -10,6 +10,7 @@ def flag(solved):
     return 'OK'
 
 for filename in os.listdir('data/output/equations'):
+    print('helo')
     sample = pandas.read_json(f'data/output/equations/{filename}', lines=True)
     sample['solved'] = sample.apply(lambda row : SympySolver.solve_equations(row['choices'][0]['message']['content'].split('\n')), axis=1)
     sample['flag'] = sample['solved'].apply(lambda row : flag(row))
