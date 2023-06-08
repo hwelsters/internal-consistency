@@ -3,7 +3,6 @@ import pandas as pd
 import json
 import random
 from collections import defaultdict
-from internal_consistency.sympy_solver import Standardize
 
 # Directories of chatgpt answers and equations
 dir_answers = 'data/output/chatgpt_answers/'
@@ -28,7 +27,7 @@ for i in range(10):
 
     # Create a dictionary with question_id as key and answers frequencies as value
     for _, row in answers.iterrows():
-        if row['chatgpt_answer'] is not None:  # Add this line
+        if row['chatgpt_answer'] is not None:  
             question_id = row['question_id']
             answer = tuple(row['chatgpt_answer'])
             answers_dict[question_id][answer] += 1
@@ -37,21 +36,23 @@ for i in range(10):
     for _, row in equations.iterrows():
         question_id = row['question_id']
         content = row['choices'][0]['message']['content']
-        _, standardized_content = Standardize.standardize_equations(content.split('/n'))
-        standardized_content_key = str(tuple(standardized_content))
-        equations_dict[question_id][standardized_content_key] += 1
+        equations_dict[question_id][content] += 1
 
 # Now, for each question_id, we'll select the answer and equation that appear most frequently
 with open(output_file, 'w') as outfile:
     for question_id, answers in answers_dict.items():
         majority_answer = max(answers, key=answers.get)
-        if answers[majority_answer] == 1:  # If there's no majority answer
+        majority_answer_freq = answers[majority_answer]
+        if majority_answer_freq == 1:  # If there's no majority answer
             majority_answer = random.choice(list(answers.keys()))  # pick a random one
+            majority_answer_freq = answers[majority_answer]
         
         equations = equations_dict[question_id]
         majority_equation = max(equations, key=equations.get)
-        if equations[majority_equation] == 1:  # If there's no majority equation
+        majority_equation_freq = equations[majority_equation]
+        if majority_equation_freq == 1:  # If there's no majority equation
             majority_equation = random.choice(list(equations.keys()))  # pick a random one
+            majority_equation_freq = equations[majority_equation]
 
-        output_line = {'question_id': question_id, 'majority_answer': list(majority_answer), 'majority_equation': majority_equation}
+        output_line = {'question_id': question_id, 'majority_answer': list(majority_answer), 'majority_answer_freq': majority_answer_freq, 'majority_equation': majority_equation, 'majority_equation_freq': majority_equation_freq}
         outfile.write(json.dumps(output_line) + '\n')
