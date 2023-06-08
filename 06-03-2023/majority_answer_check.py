@@ -1,9 +1,7 @@
 import pandas as pd
-import numpy as np
 import json
 import re
 import os
-from collections import defaultdict
 
 dir_path = 'data/output/split_response/'
 output_dir = 'data/output/chatgpt_answers/'
@@ -12,40 +10,36 @@ output_dir = 'data/output/chatgpt_answers/'
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
-questions_dict = defaultdict(lambda: defaultdict(int))
-majority_count_frequencies = defaultdict(int)
+def extract_numbers(text):
+    """Extract numbers from given text."""
+    numbers = re.findall(r"[-+]?\d*\.\d+|\d+", text)
+    numbers = [float(num) if '.' in num else int(num) for num in numbers]
+    return numbers  # Return a list
 
-# Loop through all the jsonl files
-for i in range(10):
-    with open(f'{dir_path}sample_{i}.jsonl', 'r') as file:
-        for line in file:
-            data = json.loads(line)
-            question_id = data['question_id']
-            response = data['response']
 
-            # Regular expression to find the numbers after 'the answer is'
-            match = re.search(r'the answer is(.*?)\.($|\n)', response, re.IGNORECASE)
 
-            if match:
-                answer_text = match.group(1)
-                answer_numbers = re.findall(r'\b\d+\b', answer_text)
-                answer_set = {int(number) for number in answer_numbers}
-                
-                key = str(answer_set)  # Use the set of answer numbers as the key
-                questions_dict[question_id][key] += 1
+for i in range(10):  
+    responses = pd.read_json(f'{dir_path}sample_{i}.jsonl', lines=True)
 
-    # For each file, store the majority counts and answers for each question into a new jsonl file
+    extracted_responses = []
+
+    for _, row in responses.iterrows():
+        # Look for the answer after "The answer is" ignoring case and line breaks
+        response_text = row['response'].replace('\n', ' ')
+        match = re.search(r"(?i)the answer is", response_text)
+        if match:
+            answer_text = response_text[match.end():]
+            answer = extract_numbers(answer_text)
+        else:
+            answer = None
+
+        extracted_responses.append({
+            'question_id': row['question_id'],
+            'chatgpt_answer': answer
+        })
+
+    # Write to jsonl file
     with open(f'{output_dir}sample_{i}.jsonl', 'w') as outfile:
-        for question_id, ans_dict in questions_dict.items():
-            max_count = max(ans_dict.values())
-            majority_answers_for_question = [answer for answer, count in ans_dict.items() if count == max_count]
-            
-            # Write the question id and majority answer as a json object to the new file
-            json.dump({
-                'question_id': question_id, 
-                'chatgpt_answer': majority_answers_for_question[0]
-            }, outfile)
+        for resp in extracted_responses:
+            json.dump(resp, outfile)
             outfile.write('\n')
-
-    # Reset the questions_dict for the next file
-    questions_dict = defaultdict(lambda: defaultdict(int))
