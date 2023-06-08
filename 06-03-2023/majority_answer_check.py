@@ -43,8 +43,7 @@ for i in range(10):
             # Write the question id and majority answer as a json object to the new file
             json.dump({
                 'question_id': question_id, 
-                'majority_count': max_count, 
-                'majority_answer': majority_answers_for_question[0]
+                'chatgpt_answer': majority_answers_for_question[0]
             }, outfile)
             outfile.write('\n')
 
