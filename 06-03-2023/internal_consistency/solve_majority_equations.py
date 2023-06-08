@@ -23,12 +23,12 @@ def get_responses(question_id):
 for filename in os.listdir('../data/output/majority'):
     print(filename)
     sample = pd.read_json(f'../data/output/majority/{filename}', lines=True)
+    samplex = pd.DataFrame()
+    samplex['question_id'] = sample['question_id']
+    samplex['solved'] = sample.apply(lambda row : SympySolver.solve_equations(row['majority_equation'].split('\n')), axis=1)
+    samplex['flag'] = samplex['solved'].apply(lambda row : flag(row))
+    samplex['solved'] = samplex['solved'].apply(lambda row : str(row))
 
     for i in range(10):  # limit to first 10 responses
-        samplex = sample.copy()
-        samplex['solved'] = sample.apply(lambda row : SympySolver.solve_equations(row['majority_equation'].split('\n')), axis=1)
-        samplex['flag'] = samplex['solved'].apply(lambda row : flag(row))
-        samplex['solved'] = samplex['solved'].apply(lambda row : str(row))
-        
         samplex['response'] = samplex['question_id'].apply(lambda row : get_responses(row)[i] if len(get_responses(row)) > i else None)
-        samplex.to_json(f'../data/output/solve_majority_test/sample_{i}.jsonl', lines=True, orient='records')
+        samplex.to_json(f'../data/output/solved_majority_eqn2/sample_{i}.jsonl', lines=True, orient='records')
