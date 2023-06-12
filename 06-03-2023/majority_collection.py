@@ -5,10 +5,10 @@ import random
 from collections import defaultdict
 
 # Directories of chatgpt answers and equations
-dir_answers = 'data/output/chatgpt_answers/'
+dir_answers = 'data/output/chatgpt_answers_2/'
 dir_equations = 'data/output/equations/'
 
-output_dir = 'data/output/majority/'
+output_dir = 'data/output/majority_2/'
 output_file = os.path.join(output_dir, 'majority_answers_equations.jsonl')
 
 # Create output directory if it doesn't exist
