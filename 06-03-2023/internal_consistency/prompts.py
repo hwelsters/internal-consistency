@@ -16,6 +16,13 @@ You should remove all units from your response.
 Response: {response}
 '''.strip() + '\n\n\n'
 
+EXTRACT_ANSWER = '''
+Based on your understanding, extract the numerical answers for the question after 'the answer is' and list them in a nice list like this {a, b, ...}
+
+{question}
+Response: {response}
+'''.strip() + '\n\n\n'
+
 SOLVE_SYSTEM = '''
 Solve the following system of equations:
 First, solve the equations step-by-step
