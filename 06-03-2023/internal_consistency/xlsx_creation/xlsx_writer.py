@@ -23,7 +23,7 @@ CAUSALITY_REL_COLUMN = "rel"
 
 class XlsxWriter:
     @staticmethod
-    def write_xlsx(causality_df, output_file_path):
+    def write_xlsx(causality_df, output_file_path, label):
         workbook = xlsxwriter.Workbook(output_file_path)
 
         header_format = workbook.add_format({
@@ -136,7 +136,7 @@ class XlsxWriter:
             })
             add_sub_scatter_chart.set_title({'name': description})
             add_sub_scatter_chart.set_x_axis({'name': description, 'name_font': {'size': 24, 'bold': True},})
-            add_sub_scatter_chart.set_y_axis({'name': 'Probability of total failure', 'name_font': {'size': 24, 'bold': True},}) 
+            add_sub_scatter_chart.set_y_axis({'name': label, 'name_font': {'size': 24, 'bold': True},}) 
             add_sub_scatter_chart.set_size({'width' : 1000, 'height': 1000})
             adds_and_subs_worksheet.insert_chart('M4', add_sub_scatter_chart, {'x_offset': 0, 'y_offset': 0})
         
