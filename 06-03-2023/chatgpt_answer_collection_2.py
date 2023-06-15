@@ -1,78 +1,63 @@
 import pandas as pd
-import json
-import re
 import os
+import re
+import ast
+import json
 import numpy as np
+from sympy_solver import SympySolver
 from scipy.optimize import linear_sum_assignment
 
-dir_path = 'data/output/split_response/'
-output_dir = 'data/output/chatgpt_answers_2/'
-
-# Load draw.json dataset and prepare a dictionary for solution values
-with open('data/input/draw.json') as f:
+# Load solutions
+with open('../data/input/draw.json') as f:
     dataset = json.load(f)
-
 solutions = {item['iIndex']: item['lSolutions'] for item in dataset}
 
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
+def flag(solved):
+    if str(solved).count('FAILED') > 0: return 'SUS'
+    if str(solved).count('FREE VARIABLE') > 0: return 'FREE'
+    if len(solved) == 0: return 'SUS'
+    return 'OK'
 
 def clean_up_answer(actual_answer, chatgpt_answer):
+    # Apply the cleanup logic
     cost_matrix = np.abs(np.subtract.outer(actual_answer, chatgpt_answer))
     row_ind, col_ind = linear_sum_assignment(cost_matrix)
-    cleaned_answer = [chatgpt_answer[index] for index in col_ind]
-    return cleaned_answer
+    cleaned_answer_values = [chatgpt_answer[index] for index in col_ind]
+    return cleaned_answer_values
 
 def extract_numbers(text):
     """Extract numbers from given text."""
     numbers = re.findall(r"[-+]?\d*\.\d+|\d+", text)
     numbers = [float(num) if '.' in num else int(num) for num in numbers]
-    return numbers  # Return a list
+    return numbers
 
-count = 0;
-total = 0;
+for filename in os.listdir('../data/output/solved'):
+    sample = pd.read_json(f'../data/output/solved/{filename}', lines=True)
 
-for i in range(10):  
-    responses = pd.read_json(f'{dir_path}sample_{i}.jsonl', lines=True)
-
-    extracted_responses = []
-
-    for _, row in responses.iterrows():
-        total += 1
+    # Clean-up logic
+    for index, row in sample.iterrows():
+        solved_str = row['solved']
+        solved_values = extract_numbers(solved_str)
         question_id = row['question_id']
-        response_text = row['response'].replace('\n', ' ')
-        match = re.search(r"(?i)the answer is", response_text)
-        if match:
-            answer_text = response_text[match.end():]
-            answer = extract_numbers(answer_text)
-            original_answer = answer.copy()  # Store original answer
-            if solutions.get(question_id) and answer: # make sure both lists are not empty
-                cleaned_answer = clean_up_answer(solutions[question_id], answer)
-                if cleaned_answer:  # If cleaned answer is not empty, update the answer
-                    answer = cleaned_answer
-                else:  # If cleaned answer is empty, retain the original answer
-                    answer = original_answer
-        else:
-            answer = None
 
-        # Prepare flag
-        flag = "NORMAL" if len(solutions.get(question_id, [])) >= (len(answer) if answer is not None else 0) else "WEIRD"
+        original_solved_values = solved_values.copy()
+        if solutions.get(question_id) and solved_values:
+            # Skip cleanup if number of answers is less than actual solution
+            if len(solved_values) < len(solutions[question_id]):
+                continue
+            try:
+                cleaned_answer = clean_up_answer(solutions[question_id], solved_values)
+                if cleaned_answer:  
+                    solved_values = cleaned_answer
+                else: 
+                    solved_values = original_solved_values
+            except AttributeError:
+                print(f"Question ID: {question_id}")
+                print(f"Actual answer list: {solutions[question_id]}")
+                print(f"Solved values: {solved_values}")
+                raise
+        row['solved'] = str(solved_values)
 
-        if flag == 'WEIRD':
-            count += 1
 
-        extracted_responses.append({
-            'question_id': question_id,
-            'chatgpt_answer': answer,
-            'num_solutions': len(answer) if answer is not None else None,
-            'flag': flag
-        })
-
-    # Write to jsonl file
-    with open(f'{output_dir}sample_{i}.jsonl', 'w') as outfile:
-        for resp in extracted_responses:
-            json.dump(resp, outfile)
-            outfile.write('\n')
-
-print(count)
-print(total)
+    sample['flag'] = sample['solved'].apply(lambda row : flag(row))
+    sample.to_json(f'../data/output/solved_2/{filename}', lines=True, orient='records')
