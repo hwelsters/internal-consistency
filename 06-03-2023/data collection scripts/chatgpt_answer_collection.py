@@ -60,4 +60,4 @@ for filename in os.listdir('../data/output/solved'):
 
 
     sample['flag'] = sample['solved'].apply(lambda row : flag(row))
-    sample.to_json(f'../data/output/solved_2/{filename}', lines=True, orient='records')
+    sample.to_json(f'../data/output/solved/{filename}', lines=True, orient='records')
