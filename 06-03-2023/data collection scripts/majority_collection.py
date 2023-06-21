@@ -10,6 +10,7 @@ dir_equations = '../data/output/equations/'
 dir_solved = '../data/output/solved/'
 
 majority_ans_10_cnt = 0
+majority_solve_10_cnt = 0
 
 output_dir = '../data/output/majority_set/'
 output_file = os.path.join(output_dir, 'sample_0.jsonl')
@@ -71,6 +72,8 @@ with open(output_file, 'w') as outfile:
         solved = solved_dict[question_id]
         majority_solved = max(solved, key=solved.get)
         majority_solved_freq = solved[majority_solved]
+        if majority_solved_freq == 10:
+            majority_solve_10_cnt += 1
         if majority_solved_freq == 1:
             majority_solved = random.choice(list(solved.keys()))  # pick a random one
             majority_solved_freq = solved[majority_solved]
@@ -79,4 +82,4 @@ with open(output_file, 'w') as outfile:
             'majority_solved_freq': majority_solved_freq}
         outfile.write(json.dumps(output_line) + '\n')
 
-print(majority_ans_10_cnt)
+print(majority_solve_10_cnt)
