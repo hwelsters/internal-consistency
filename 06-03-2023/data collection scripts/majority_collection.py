@@ -5,11 +5,13 @@ import random
 from collections import defaultdict
 
 # Directories of chatgpt answers and equations
-dir_answers = 'data/output/chatgpt_answers/'
-dir_equations = 'data/output/equations/'
-dir_solved = 'data/output/solved/'
+dir_answers = '../data/output/chatgpt_answers/'
+dir_equations = '../data/output/equations/'
+dir_solved = '../data/output/solved/'
 
-output_dir = 'data/output/majority_set/'
+majority_ans_10_cnt = 0
+
+output_dir = '../data/output/majority_set/'
 output_file = os.path.join(output_dir, 'sample_0.jsonl')
 
 # Create output directory if it doesn't exist
@@ -52,9 +54,12 @@ with open(output_file, 'w') as outfile:
     for question_id, answers in answers_dict.items():
         majority_answer = max(answers, key=answers.get)
         majority_answer_freq = answers[majority_answer]
+        if majority_answer_freq == 10:
+            majority_ans_10_cnt += 1
         if majority_answer_freq == 1:  # If there's no majority answer
             majority_answer = random.choice(list(answers.keys()))  # pick a random one
             majority_answer_freq = answers[majority_answer]
+
         
         equations = equations_dict[question_id]
         majority_equation = max(equations, key=equations.get)
@@ -73,3 +78,5 @@ with open(output_file, 'w') as outfile:
         output_line = {'question_id': question_id, 'majority_answer': list(majority_answer), 'majority_answer_freq': majority_answer_freq, 'majority_equation': majority_equation, 'majority_equation_freq': majority_equation_freq, 'majority_solved': majority_solved,
             'majority_solved_freq': majority_solved_freq}
         outfile.write(json.dumps(output_line) + '\n')
+
+print(majority_ans_10_cnt)

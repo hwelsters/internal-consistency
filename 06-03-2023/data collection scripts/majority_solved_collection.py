@@ -5,7 +5,7 @@ from collections import defaultdict
 import ast
 
 # Set the directories
-dir_solved = 'data/output/solved_2/'
+dir_solved = 'data/output/solved/'
 output_dir = 'data/output/majority_solved/'
 
 # If the output directory does not exist, create it
