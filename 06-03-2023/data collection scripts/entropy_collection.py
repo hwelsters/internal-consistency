@@ -25,10 +25,11 @@ def entropy(prob_dist):
 for i in range(10):
     answers = pd.read_json(f'{dir_answers}/sample_{i}.jsonl', lines=True)
     for _, row in answers.iterrows():
-        if row['chatgpt_answer'] is not None:
-            question_id = row['question_id']
-            # Treat the whole list of answers as a single answer
-            answers_dict[question_id].append(tuple(row['chatgpt_answer']))
+        question_id = row['question_id']
+        # Treat null answers as a separate distinct answer
+        answer = row['chatgpt_answer'] if row['chatgpt_answer'] is not None else [-1]
+        # Treat the whole list of answers as a single answer
+        answers_dict[question_id].append(tuple(answer))
 
 # Now, for each question_id, we'll calculate the entropy of answers
 entropy_zero_counter = 0
