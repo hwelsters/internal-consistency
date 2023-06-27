@@ -1,0 +1,12 @@
+We made the following changes:
+we were extracting every number after the word the answer is. this led to cases where chatgpt said something like 5ml of 9% solution... and we would extract 5 and 9
+
+
+Look for strong linear monotonic relationships
+Looks at all pairs of categories and put a note on linear relationships (ignore multiplication for now)
+
+strong monotonic > 0.75
+weak monotonic  > 0.6 0.75 R2
+monotonic
+Anti-monotonic 
+None
