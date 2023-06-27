@@ -3,18 +3,25 @@ import pandas as pd
 import json
 import math
 import re
+from typing import List
+from collections import Counter
+from scipy.stats import entropy
 from collections import defaultdict
 
 dir_answers = '../data/output/chatgpt_answers/'
 dir_equations = '../data/output/equations/'
 dir_solved = '../data/output/solved/'
+dir_check = '../data/output/split_sympy=ans/'
 
 # Output file directory
-output_dir = '../data/output/entropy'
-output_file = os.path.join(output_dir, 'sample_0.jsonl')
+output_dir_true = '../data/output/entropy_sympy=ans/'
+output_dir_false = '../data/output/entropy_sympy!=ans/'
 
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
+if not os.path.exists(output_dir_true):
+    os.makedirs(output_dir_true)
+
+if not os.path.exists(output_dir_false):
+    os.makedirs(output_dir_false)
 
 answers_dict = defaultdict(list)
 equations_dict = defaultdict(list)
@@ -23,6 +30,25 @@ solved_dict = defaultdict(list)
 # Function to calculate the entropy
 def entropy(prob_dist):
     return abs(sum([p * math.log2(p) for p in prob_dist.values()]))
+
+def probability_distribution(values : List[any]):
+    counter = Counter(values)
+
+    for key in counter.keys():
+        counter[key] = counter[key] / len(values)
+    
+    return counter
+
+def base(values : List[any], **kwargs) -> float:
+    values = [str(value) for value in values]
+    prob = probability_distribution(values).values()
+    return entropy(pk=list(prob), **kwargs)
+
+# Function to parse the solved string
+def parse_solved_string(solved_str):
+    num_list = re.findall(r"[-+]?\d*\.\d+|\d+", solved_str)
+    num_list = [int(float(num)) if float(num).is_integer() else float(num) for num in num_list]
+    return tuple(sorted(num_list))
 
 def calculate_entropy(data):
     prob_dist = {}
@@ -36,12 +62,6 @@ def calculate_entropy(data):
     prob_dist = {k: v/total_data for k, v in prob_dist.items()}
     # Calculating entropy
     return entropy(prob_dist)
-
-# Function to parse the solved string
-def parse_solved_string(solved_str):
-    num_list = re.findall(r"[-+]?\d*\.\d+|\d+", solved_str)
-    num_list = [int(float(num)) if float(num).is_integer() else float(num) for num in num_list]
-    return tuple(sorted(num_list))
 
 
 for i in range(10):
@@ -65,9 +85,15 @@ for i in range(10):
         solved_tuple = parse_solved_string(solved_str)
         solved_dict[question_id].append(solved_tuple)
 
+check = pd.read_json(f'{dir_check}/sample_0.jsonl', lines=True)
+check_dict = check.set_index('question_id')['sympy_equals_final_answer'].to_dict()
+print(check_dict[question_id])
 
-entropy_zero_counter = 0
-with open(output_file, 'w') as outfile:
+    
+output_file_true = os.path.join(output_dir_true, f'sample_0.jsonl')
+output_file_false = os.path.join(output_dir_false, f'sample_0.jsonl')
+
+with open(output_file_true, 'w') as outfile_true, open(output_file_false, 'w') as outfile_false:
     for question_id, answers in answers_dict.items():
         # Calculating entropy for answers
         entropy_answer = calculate_entropy(answers)
@@ -80,7 +106,10 @@ with open(output_file, 'w') as outfile:
         solved = solved_dict[question_id]
         entropy_solved = calculate_entropy(solved)
 
-        output_line = {'question_id': question_id, 'entropy_solution': entropy_answer, 'entropy_equation_strict': entropy_equation, 'entropy_equation_loose': entropy_solved}
-        outfile.write(json.dumps(output_line) + '\n')
-
-print(f"Entropy is zero for {entropy_zero_counter} questions.")
+        output_line = {'question_id': question_id, 'entropy_answer': entropy_answer, 'entropy_equation': entropy_equation, 'entropy_solved': entropy_solved}
+        # print("Question ID: ", question_id, " is ", check_dict[question_id])
+        # Write to the appropriate file
+        if check_dict[question_id]:
+            outfile_true.write(json.dumps(output_line) + '\n')
+        else:
+            outfile_false.write(json.dumps(output_line) + '\n')
