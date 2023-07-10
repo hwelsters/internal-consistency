@@ -1,1 +1,0 @@
-{"columns":["sampler","model","hyperparameters","precision_True","recall_True","f1-score_True","precision_False","recall_False","f1-score_False","f1-score_Average","accuracy"],"index":[0,"('AdaBoostClassifier', '[]')"],"data":[["","","","","","","","","",0.0,""],["ADASYN(random_state=0)","AdaBoostClassifier","[]",0.418,0.684,0.514,0.91,0.776,0.836,0.675,0.76]]}
