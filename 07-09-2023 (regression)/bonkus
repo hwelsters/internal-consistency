@@ -1,0 +1,1 @@
+{"clf":"AdaBoostRegressor()","sampler":"None","fit_time":0.0396667004,"score_time":0.0060970783,"r2":0.1439088315,"neg_mean_squared_error":-0.2091859628,"neg_median_absolute_error":-0.4090653242,"neg_mean_absolute_error":-0.4186387218,"max_error":-0.9324654318}
